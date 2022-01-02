@@ -32,9 +32,8 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		relation.ProjectID = c.ProjectID
 
-		if err := relation.Upload(); err != nil {
+		if err := relation.Upload(c.ProjectID); err != nil {
 			log.Fatal(err)
 		}
 		count++
