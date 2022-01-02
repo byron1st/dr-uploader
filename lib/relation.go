@@ -14,15 +14,17 @@ import (
 const coll = "relations"
 
 type RelationByTarget struct {
+	Language       string `json:"language"`
 	TargetModule   string `json:"targetModule"`
 	TargetFunc     string `json:"targetFunc,omitempty"`
 	SourceModule   string `json:"sourceModule"`
 	SourceLocation string `json:"sourceLocation,omitempty"`
 }
 
-// db.getCollection("relations").createIndex({ projectID: 1, targetModule: 1 }, { unique: true })
+// db.getCollection("relations").createIndex({ projectID: 1, language: 1, targetModule: 1 }, { unique: true })
 type Relation struct {
 	ProjectID    string `json:"projectID"`
+	Language     string `json:"language"`
 	TargetModule string `json:"targetModule"`
 
 	Calls []Call `json:"calls"`
@@ -46,6 +48,7 @@ func (r RelationByTarget) Upload(projectID string) error {
 	}, bson.M{
 		"$set": bson.M{
 			"projectID":    projectID,
+			"language":     r.Language,
 			"targetModule": r.TargetModule,
 		},
 		"$addToSet": bson.M{
