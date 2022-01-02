@@ -3,8 +3,10 @@ package lib
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const coll = "relations"
@@ -20,10 +22,17 @@ func (r Relation) Upload() error {
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultDBTransactionTimeout)
 	defer cancel()
 
-	_, err := db.Collection(coll).InsertOne(ctx, &r)
+	result, err := db.Collection(coll).InsertOne(ctx, &r)
 	if err != nil {
 		return errors.WithStack(err)
 	}
+
+	id, ok := result.InsertedID.(primitive.ObjectID)
+	if !ok {
+		return errors.New("failed to convert InsertedID to string")
+	}
+
+	fmt.Printf("ID=%s SRC=%s TAR=%s\n", id.Hex(), r.Source, r.Target)
 
 	return nil
 }

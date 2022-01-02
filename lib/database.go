@@ -34,5 +34,10 @@ func ConnectDB(uri string, name string) error {
 	}
 
 	db = client.Database(name)
+
 	return nil
+}
+
+func DisconnectDB() error {
+	return db.Client().Disconnect(context.Background())
 }

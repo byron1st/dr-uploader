@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/byron1st/dr-uploader/lib"
-	"github.com/spf13/viper"
 )
 
 func main() {
@@ -21,8 +21,14 @@ func main() {
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)
+	count := 0
 	for scanner.Scan() {
-		relation, err := lib.Parse(scanner.Text())
+		line := scanner.Text()
+		if len(line) == 0 {
+			break
+		}
+
+		relation, err := lib.Parse(line)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -30,9 +36,16 @@ func main() {
 		if err := relation.Upload(); err != nil {
 			log.Fatal(err)
 		}
+		count++
 	}
 
+	fmt.Printf("Inserted=%d", count)
+
 	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := lib.DisconnectDB(); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -45,29 +58,19 @@ type config struct {
 func readConfig() (config, error) {
 	c := config{}
 
-	viper.SetConfigFile(".env")
-	err := viper.ReadInConfig()
-	if err != nil {
-		return c, err
+	dbURIFull := os.Getenv("DB")
+	if dbURIFull == "" {
+		return c, errors.New("no DB URI set")
 	}
 
-	c.DBUri, err = getValue("DB_URI")
-	if err != nil {
-		return c, err
+	idx := strings.LastIndex(dbURIFull, "/")
+	if idx == -1 {
+		return c, errors.New("wrong DB URI")
 	}
+	c.DBUri = dbURIFull[:idx]
+	c.DBName = dbURIFull[idx+1:]
 
-	c.DBName, err = getValue("DB_NAME")
-	if err != nil {
-		return c, err
-	}
+	fmt.Printf("DB:%s/%s", c.DBUri, c.DBName)
 
 	return c, nil
-}
-
-func getValue(key string) (string, error) {
-	if value, ok := viper.Get(key).(string); !ok {
-		return "", errors.New(fmt.Sprintf("failed to get %s", key))
-	} else {
-		return value, nil
-	}
 }
