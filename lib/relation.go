@@ -12,10 +12,11 @@ import (
 const coll = "relations"
 
 type Relation struct {
-	Source   string `json:"source"`
-	Target   string `json:"target"`
-	Kind     string `json:"kind,omitempty"`
-	Location string `json:"location,omitempty"`
+	ProjectID string `json:"projectID"`
+	Source    string `json:"source"`
+	Target    string `json:"target"`
+	Kind      string `json:"kind,omitempty"`
+	Location  string `json:"location,omitempty"`
 }
 
 func (r Relation) Upload() error {

@@ -32,6 +32,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		relation.ProjectID = c.ProjectID
 
 		if err := relation.Upload(); err != nil {
 			log.Fatal(err)
@@ -51,8 +52,9 @@ func main() {
 }
 
 type config struct {
-	DBUri  string
-	DBName string
+	DBUri     string
+	DBName    string
+	ProjectID string
 }
 
 func readConfig() (config, error) {
@@ -63,6 +65,11 @@ func readConfig() (config, error) {
 		return c, errors.New("no DB URI set")
 	}
 
+	projectID := os.Getenv("PROJECT")
+	if projectID == "" {
+		return c, errors.New("no project ID set")
+	}
+
 	idx := strings.LastIndex(dbURIFull, "/")
 	if idx == -1 {
 		return c, errors.New("wrong DB URI")
@@ -70,7 +77,9 @@ func readConfig() (config, error) {
 	c.DBUri = dbURIFull[:idx]
 	c.DBName = dbURIFull[idx+1:]
 
-	fmt.Printf("DB:%s/%s", c.DBUri, c.DBName)
+	c.ProjectID = projectID
+
+	fmt.Printf("DB:%s/%s,PROJ=%s", c.DBUri, c.DBName, c.ProjectID)
 
 	return c, nil
 }
